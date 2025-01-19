@@ -48,6 +48,14 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'https://aditikrishnavoyage.netlify.app/' # The default port for create-react-app
 ]
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
