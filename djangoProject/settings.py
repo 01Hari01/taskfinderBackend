@@ -9,27 +9,26 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
+import dj_database_url
 
 import environ
 from decouple import config
+from django.conf.global_settings import DATABASES
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f-c%e5rth6yz9165u5p76yh)6gw_i1w5l%j(dnbdh5xddxg9$b'
-
+SECRET_KEY = os.environ.get('SECTRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False)== 'True'
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['taskfinderBackend.onrender.com', 'localhost','127.0.0.1']
 
 # Application definition
 
@@ -45,11 +44,13 @@ INSTALLED_APPS = [
 
 ]
 CORS_ORIGIN_WHITELIST = [
-     'http://localhost:3000',  # The default port for create-react-app
+    'http://localhost:3000',
+    'https://aditikrishnavoyage.netlify.app/' # The default port for create-react-app
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,16 +87,20 @@ environ.Env.read_env()
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),          # Database name
-        'USER': config('DB_USER'),          # Database user
+        'NAME': config('DB_NAME'),  # Database name
+        'USER': config('DB_USER'),  # Database user
         'PASSWORD': config('DB_PASSWORD'),  # Database password
-        'HOST': config('DB_HOST'),          # Database host
-        'PORT': config('DB_PORT'),          # Database port
+        'HOST': config('DB_HOST'),  # Database host
+        'PORT': config('DB_PORT'),  # Database port
     }
 }
+'''
+database_url = os.environ.get('DATABASE_URL')
+DATABASES["default"] = dj_database_url.parse("postgresql://taskfinder_db_user:gxFETqLEfQAzCWhHMXzqiLHkmq5h1w4c@dpg-cu6aidlds78s73ai0610-a.singapore-postgres.render.com/taskfinder_db")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -115,7 +120,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -127,11 +131,13 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -142,6 +148,6 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',  # Only allow JSON responses
     ],
-'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny']
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny']
 
 }
