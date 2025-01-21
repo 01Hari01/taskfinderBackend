@@ -22,8 +22,11 @@ class LoginView(APIView):
     def post(self,request):
         username = request.data.get('username')
         password = request.data.get('password')
-        confirm_password = request.data.get('confirm_password')
+        remember_me = request.data.get('remember_me')
         user = authenticate(username=username,password=password)
+        if not remember_me:
+            # Session expires when the browser is closed
+            request.session.set_expiry(0)
         if user:
             login(request,user)
             return Response({"message":"Login Successful"},status=status.HTTP_201_CREATED)
