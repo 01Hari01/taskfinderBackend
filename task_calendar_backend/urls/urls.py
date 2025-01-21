@@ -1,5 +1,5 @@
 from django.urls import path
-from task_calendar_backend.views.views import TaskList, TaskDetail, PendingTasks
+from task_calendar_backend.views.views import TaskList, TaskDetail, PendingTasks, RegisterView, LoginView, LogoutView
 
 urlpatterns = [
     # Fetch tasks for a specific date or create a new task
@@ -11,4 +11,8 @@ urlpatterns = [
 
     # Fetch pending tasks (tasks with a date earlier than the current date and not completed)
     path('tasks/pending/<str:current_date>/', PendingTasks.as_view(), name='pending-tasks'),  # GET pending tasks
+
+    path('auth/register/',RegisterView.as_view(),name='register'),
+    path('auth/login/',LoginView.as_view(),name='login'),
+    path('auth/logout/',LogoutView.as_view(),name='logout')
 ]

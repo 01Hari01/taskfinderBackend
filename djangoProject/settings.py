@@ -48,6 +48,7 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
     'https://aditikrishnavoyage.netlify.app/' # The default port for create-react-app
 ]
+LOGIN_URL = '/login/'
 CORS_ALLOW_METHODS = [
     "GET",
     "POST",

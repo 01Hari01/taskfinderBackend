@@ -1,14 +1,41 @@
+from django.contrib.auth import authenticate, login, logout
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.dateparse import parse_date
 from django.core.exceptions import ValidationError
 
 from task_calendar_backend.models import Task
-from task_calendar_backend.serializers.serializers import TaskSerializer
+from task_calendar_backend.serializers.serializers import TaskSerializer, UserRegistrationSerializer
 
+
+class RegisterView(APIView):
+    def post(self,request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"user registered successfully"},status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+    def post(self,request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+        user = authenticate(username=username,password=password)
+        if user:
+            login(request,user)
+            return Response({"message":"Login Successful"},status=status.HTTP_201_CREATED)
+        return Response({"error":"INvalid Credentials"},status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    def post(self,request):
+        logout(request)
+        return Response({"message":"Logged out successfully"},status=200)
 
 class TaskList(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, selected_date):
         """
         Fetch tasks for a specific date.
@@ -41,6 +68,7 @@ class TaskList(APIView):
 
 
 class TaskDetail(APIView):
+    permission_classes = [IsAuthenticated]
     def get_task(self, task_id):
         """
         Helper method to fetch a task by its ID.
@@ -99,6 +127,7 @@ class TaskDetail(APIView):
         )
 
 class PendingTasks(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, current_date):
         """
         Fetch pending tasks (tasks with a date earlier than the current date and not completed).
