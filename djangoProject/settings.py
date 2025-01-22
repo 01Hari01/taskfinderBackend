@@ -14,7 +14,6 @@ from pathlib import Path
 import dj_database_url
 
 import environ
-from decouple import config
 from django.conf.global_settings import DATABASES
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -46,6 +45,7 @@ INSTALLED_APPS = [
 ]
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
+    'http://localhost:3001',
     'https://aditikrishnavoyage.netlify.app' # The default port for create-react-app
 ]
 LOGIN_URL = '/login/'
@@ -158,6 +158,8 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',  # Only allow JSON responses
     ],
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny']
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+    'DEFAULT_AUTHENTICATION_CLASSES' : ['rest_framework_simplejwt.authentication.JWTAuthentication',]
 
 }
+
