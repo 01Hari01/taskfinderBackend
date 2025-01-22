@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.dateparse import parse_date
 from django.core.exceptions import ValidationError
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from task_calendar_backend.models import Task
 from task_calendar_backend.serializers.serializers import TaskSerializer, UserRegistrationSerializer
@@ -16,7 +15,7 @@ class RegisterView(APIView):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"user registered successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"user registered successfully created"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -36,9 +35,6 @@ class LoginView(APIView):
 
         login(request, user)
 
-        # Generate tokens
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
 
         # Set session expiry
         if not remember_me:
@@ -48,7 +44,6 @@ class LoginView(APIView):
 
         return Response({
             "message": "Login Successful",
-            "token": access_token,  # Return the token
         }, status=status.HTTP_200_OK)
 
 
