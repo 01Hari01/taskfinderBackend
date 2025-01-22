@@ -8,15 +8,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     confirm_password= serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields ='__all__'
-    def validate(self,data):
-        if len(data['username'])>10:
-            raise ValueError('Username must be at most 10 characters')
-        if data['password'] != data['confirm_password']:
-            raise ValueError('Passwords must match')
-        return data
+        fields = ['username', 'password', 'confirm_password']
+
+    def validate(self, data):
+        username = data.get('username', '')
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+
+        if len(username) > 10:
+            raise serializers.ValidationError({"username": "Username must be at most 10 characters."})
+        if password != confirm_password:
+            raise serializers.ValidationError({"password": "Passwords must match."})
 
     def create(self,validated_data):
+        validated_data.pop("confirm_password")
         user = User.objects.create_user(
             username=validated_data["username"],
             password= validated_data["password"]
