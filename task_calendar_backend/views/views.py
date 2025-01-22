@@ -5,56 +5,62 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.dateparse import parse_date
 from django.core.exceptions import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from task_calendar_backend.models import Task
 from task_calendar_backend.serializers.serializers import TaskSerializer, UserRegistrationSerializer
 
 
 class RegisterView(APIView):
-    def post(self,request):
+    def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"user registered successfully"},status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response({"user registered successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):
     def post(self, request):
-        # Get data from request
         username = request.data.get('username')
         password = request.data.get('password')
-        remember_me = request.data.get('remember_me', False)  # Default to False if not provided
+        remember_me = request.data.get('remember_me', False)
 
-        # Check if both username and password are provided
         if not username or not password:
             return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Authenticate user
         user = authenticate(username=username, password=password)
 
-        # If authentication fails
         if not user:
             return Response({"error": "Invalid credentials."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Successful login
         login(request, user)
 
-        # Handle session expiration logic
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        # Set session expiry
         if not remember_me:
             request.session.set_expiry(0)  # Session expires when browser is closed
         else:
-            request.session.set_expiry(60 * 60 * 24 * 7)  # Keep session alive for 7 days if remember_me is True
+            request.session.set_expiry(60 * 60 * 24 * 7)  # 7 days
 
-        return Response({"message": "Login Successful"}, status=status.HTTP_200_OK)
+        return Response({
+            "message": "Login Successful",
+            "token": access_token,  # Return the token
+        }, status=status.HTTP_200_OK)
+
 
 class LogoutView(APIView):
-    def post(self,request):
+    def post(self, request):
         logout(request)
-        return Response({"message":"Logged out successfully"},status=200)
+        return Response({"message": "Logged out successfully"}, status=200)
+
 
 class TaskList(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request, selected_date):
         """
         Fetch tasks for a specific date.
@@ -73,7 +79,8 @@ class TaskList(APIView):
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"error": "An internal server error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "An internal server error occurred."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
         """
@@ -88,6 +95,7 @@ class TaskList(APIView):
 
 class TaskDetail(APIView):
     permission_classes = [IsAuthenticated]
+
     def get_task(self, task_id):
         """
         Helper method to fetch a task by its ID.
@@ -145,8 +153,10 @@ class TaskDetail(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+
 class PendingTasks(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request, current_date):
         """
         Fetch pending tasks (tasks with a date earlier than the current date and not completed).
@@ -165,4 +175,5 @@ class PendingTasks(APIView):
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"error": "An internal server error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "An internal server error occurred."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
