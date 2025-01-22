@@ -18,19 +18,35 @@ class RegisterView(APIView):
             return Response({"user registered successfully"},status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
+
 class LoginView(APIView):
-    def post(self,request):
+    def post(self, request):
+        # Get data from request
         username = request.data.get('username')
         password = request.data.get('password')
-        remember_me = request.data.get('remember_me')
-        user = authenticate(username=username,password=password)
+        remember_me = request.data.get('remember_me', False)  # Default to False if not provided
+
+        # Check if both username and password are provided
+        if not username or not password:
+            return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Authenticate user
+        user = authenticate(username=username, password=password)
+
+        # If authentication fails
+        if not user:
+            return Response({"error": "Invalid credentials."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Successful login
+        login(request, user)
+
+        # Handle session expiration logic
         if not remember_me:
-            # Session expires when the browser is closed
-            request.session.set_expiry(0)
-        if user:
-            login(request,user)
-            return Response({"message":"Login Successful"},status=status.HTTP_201_CREATED)
-        return Response({"error":"INvalid Credentials"},status=status.HTTP_400_BAD_REQUEST)
+            request.session.set_expiry(0)  # Session expires when browser is closed
+        else:
+            request.session.set_expiry(60 * 60 * 24 * 7)  # Keep session alive for 7 days if remember_me is True
+
+        return Response({"message": "Login Successful"}, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
     def post(self,request):
