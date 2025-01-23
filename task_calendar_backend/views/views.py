@@ -54,7 +54,6 @@ class LogoutView(APIView):
 
 
 class TaskList(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, selected_date):
         """
@@ -89,7 +88,6 @@ class TaskList(APIView):
 
 
 class TaskDetail(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get_task(self, task_id):
         """
@@ -150,7 +148,6 @@ class TaskDetail(APIView):
 
 
 class PendingTasks(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, current_date):
         """
