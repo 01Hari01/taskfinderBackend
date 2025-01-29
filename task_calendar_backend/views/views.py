@@ -80,9 +80,11 @@ class TaskList(APIView):
         """
         Create a new task.
         """
-        serializer = TaskSerializer(data=request.data)
+        data = request.data
+        data['user'] = request.user.id
+        serializer = TaskSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

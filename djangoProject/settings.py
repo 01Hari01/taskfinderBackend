@@ -159,6 +159,10 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',  # Only allow JSON responses
     ],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
 
 }
 
